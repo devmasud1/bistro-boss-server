@@ -7,7 +7,14 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 //middleware
-app.use(cors());
+
+const corsOrigin = {
+  origin: "http://localhost:5173", //or whatever port your frontend is using
+  credentials: true,
+  optionSuccessStatus: 200,
+};
+app.use(cors(corsOrigin));
+// app.use(cors());
 app.use(express.json());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.aunb3y8.mongodb.net/?retryWrites=true&w=majority`;
@@ -129,18 +136,38 @@ async function run() {
     );
 
     //menu api
+    app.post("/api/v1/menu", verifyToken, verifyAdmin, async (req, res) => {
+      const menuItem = req.body;
+      const result = await menuCollection.insertOne(menuItem);
+      res.send(result);
+    });
+
     app.get("/api/v1/menu", async (req, res) => {
       const result = await menuCollection.find().toArray();
       res.send(result);
     });
 
+    app.delete(
+      "/api/v1/menu/:id",
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        console.log(query);
+        const result = await menuCollection.deleteOne(query);
+        res.send(result);
+      }
+    );
+    
+
+    //review
     app.get("/api/v1/reviews", async (req, res) => {
       const result = await reviewsCollection.find().toArray();
       res.send(result);
     });
 
     //cart api
-
     app.get("/api/v1/carts", async (req, res) => {
       const email = req.query.email;
       const query = { email: email };
