@@ -147,6 +147,31 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/api/v1/menu/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await menuCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.patch("/api/v1/menu/:id", async (req, res) => {
+      const menuItem = req.body;
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          name: menuItem.name,
+          category: menuItem.category,
+          price: menuItem.price,
+          recipe: menuItem.recipe,
+          image: menuItem.image,
+        },
+      };
+
+      const result = await menuCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
+
     app.delete(
       "/api/v1/menu/:id",
       verifyToken,
@@ -159,7 +184,6 @@ async function run() {
         res.send(result);
       }
     );
-    
 
     //review
     app.get("/api/v1/reviews", async (req, res) => {
